@@ -1,205 +1,461 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/3syv-TE0)
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=24062942&assignment_repo_type=AssignmentRepo)
-# Projet – Gestion académique (React / Node)
+# Gestion academique - React / Node.js
 
-## Objectif du projet
-Ce projet a pour objectif de concevoir une application web de gestion académique permettant
-la gestion des étudiants, cours, unités d’enseignement, diplômes, professeurs, notes et statistiques,
-avec un système d’authentification sécurisé et une architecture moderne (React / Node).
+Application web de gestion academique pour suivre les etudiants, les matieres, les UE, les diplomes, les professeurs, les notes et les statistiques. Le projet se compose d'un frontend React et d'une API Node.js connectee a MongoDB.
 
----
+## Contributors
 
-## Module 1 – Enrichissement du modèle de données
+- Tabrani Mehdi
 
-### 1.1 Cours (Matières)
-Compléter le modèle existant des matières en ajoutant :
-- Une description
-- Un syllabus
-- Les pré-requis
+## Architecture
 
-### 1.2 Étudiants
-Compléter le modèle des étudiants avec :
-- Une photo
-- Une adresse
+```text
+gestion-academique/
+  frontend/                 Interface React + Material UI
+  backend/                  API REST Express + MongoDB
+    controllers/            Logique metier des entites
+    models/                 Schemas Mongoose
+    routes/                 Routes API protegees par role
+    middleware/             Authentification, roles, upload, erreurs
+    seed/seed.js            Jeu de donnees complet pour MongoDB
+    tests/smoke.ps1         Test rapide de l'API
+  postman/                  Collection Postman de test API
+  docker-compose.yml        Lancement complet MongoDB + API + frontend
+```
 
-### 1.3 Unités d’Enseignement (UE)
-Introduire la notion d’Unité d’Enseignement (UE) avec les règles suivantes :
-- Une UE regroupe plusieurs matières
-- Une matière peut appartenir à plusieurs UE
-- Une UE est enseignée dans une promotion
-- Les matières d’une UE se compensent entre elles
-- Une UE ne peut pas être validée si l’étudiant obtient une note éliminatoire dans l’une des matières
+Le frontend consomme l'API via `VITE_API_URL`. Si l'API est indisponible, certaines donnees restent visibles en mode local pour faciliter les demonstrations, mais les donnees persistantes viennent de MongoDB.
 
-### 1.4 Diplômes (Classes / Formations)
-Mettre en place la gestion des diplômes :
-- Un diplôme est composé de plusieurs étudiants
-- Un étudiant est inscrit à un seul diplôme  
-  *(La gestion du double diplôme peut être traitée en bonus)*
-- Un étudiant obtient son diplôme si et seulement s’il a validé toutes les UE
-- Une UE ne peut pas être validée si l’étudiant obtient une note éliminatoire dans l’une des matières de l’UE
+## Choix techniques
 
-### 1.5 Professeurs
-Ajouter la gestion des professeurs :
-- Chaque UE possède un professeur référent
-- Chaque matière est enseignée par un professeur
-- Un professeur peut enseigner plusieurs matières
+- React 18 avec Vite pour une interface rapide a lancer.
+- Material UI pour les composants, le theme clair/sombre et le responsive.
+- Recharts pour les dashboards et statistiques.
+- Node.js, Express et Mongoose pour l'API REST.
+- JWT pour proteger les routes apres connexion.
+- Passport Google OAuth 2 pour le SSO.
+- OTP compatible Google Authenticator / Microsoft Authenticator.
+- Nodemailer pour les emails SMTP.
+- Twilio optionnel pour les SMS.
+- Docker pour lancer MongoDB, backend et frontend ensemble.
 
----
+## Installation locale
 
-## Module 2 – Authentification et gestion des accès
+### Backend
 
-### 2.1 Authentification OAuth 2
-Mettre en place un module d’authentification basé sur OAuth 2, obligatoire pour accéder aux
-fonctionnalités de l’application.
+```powershell
+cd backend
+npm install
+```
 
-### 2.2 Gestion des rôles
-Implémenter les rôles suivants :
-- **ADMIN** : Administration complète des comptes et des données
-- **SCOLARITÉ** : Gestion administrative des étudiants, cours et notes
-- **STUDENT** : Consultation de ses propres données uniquement
-- **TEACHER** : Gestion des UE et des matières enseignées
+Creer un fichier `.env` dans `backend/`:
 
-### 2.3 Droits d’accès par rôle
-Une fois connecté :
-- **Administrateur**
-  - Accès complet en lecture et écriture à toutes les entités
-- **Scolarité**
-  - Accès aux étudiants, cours et notes
-  - Saisie des notes
-  - Édition des profils étudiants
-  - Association étudiants ↔ cours
-- **Étudiant**
-  - Consultation de ses notes
-  - Visualisation des statistiques liées à son dossier académique
-- **Enseignant**
-  - Gestion des UE et des matières qu’il enseigne
+```env
+PORT=5000
+MONGODB_URI=mongodb://127.0.0.1:27017/academic_management
+JWT_SECRET=change_this_secret
+JWT_EXPIRE=7d
+FRONTEND_URL=http://localhost:5173
 
-### 2.4 Authentification OTP
-Renforcer la sécurité en intégrant une authentification OTP (One-Time Password).
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
 
-### 2.5 Authentification SSO
-Autoriser l’authentification via des fournisseurs SSO :
-- Google
-- Facebook
-- X (Twitter)
-- Autres au choix
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_app_password
+SMTP_FROM=your_email@gmail.com
 
----
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_PHONE_NUMBER=
+```
 
-## Module 3 – Design et expérience utilisateur
+Importer les donnees de demonstration:
 
-- Utilisation de Material UI Theming
-  - Mode clair
-  - Mode sombre
-- Application responsive
-  - Adaptation de l’affichage selon le type d’écran (desktop, tablette, mobile)
+```powershell
+npm run seed
+```
 
----
+Lancer l'API:
 
-## Module 4 – Statistiques avancées
+```powershell
+npm run dev
+```
 
-Développer des dashboards dynamiques adaptés au profil utilisateur :
+API disponible sur `http://localhost:5000/api`.
 
-- **Administrateur**
-  - Vision globale sur toutes les entités (étudiants, cours, UE, diplômes, professeurs)
-- **Scolarité**
-  - Statistiques sur les étudiants, cours et notes
-- **Étudiant**
-  - Statistiques personnelles (moyennes, progression, validation des UE)
+### Frontend
 
----
+```powershell
+cd frontend
+npm install
+npm run dev
+```
 
-## Module 5 – Containerisation et déploiement
+Interface disponible sur `http://localhost:5173` ou l'URL indiquee par Vite.
 
-- Containerisation des applications React et Node.js avec Docker
-- Mise en place d’une pipeline de déploiement dans le cloud :
-  - AWS, Hostinger ou autre fournisseur
-- Automatisation du build et du déploiement
+## Lancement avec Docker
 
----
+Copier le fichier d'exemple Docker:
 
-## Bonus (optionnel)
-- Gestion du double diplôme
-- Notifications (email / SMS)
-- Tests unitaires et tests d’intégration
-- Lien de validation de comptes par email (eg. un étudiant/professeur recoit un mail avec un mot de passe temporaire qu'il doit changer à la première connexion)
-- 
+```powershell
+Copy-Item .env.docker.example .env
+```
 
-## Livrables attendus
+Puis completer `.env` avec les valeurs disponibles. Pour tester les SMS reels, renseigner au minimum:
 
-Chaque groupe devra fournir les éléments suivants :
+```env
+TWILIO_ACCOUNT_SID=...
+TWILIO_AUTH_TOKEN=...
+TWILIO_PHONE_NUMBER=+12402215903
+```
 
-### 1. Code source
-- Un dépôt Git (GitHub, GitLab ou équivalent) contenant :
-  - Le frontend React
-  - Le backend Node.js
-- Un historique de commits clair et régulier
-- Un code lisible, structuré et commenté
+Le frontend Docker utilise `/api`; Nginx redirige ensuite les requetes vers le backend.
 
-### 2. Documentation
-- Un fichier `README.md` à jour décrivant :
-  - L’architecture globale du projet
-  - Les choix techniques effectués
-  - Les instructions d’installation et de lancement
-- Un schéma du modèle de données (UML ou ER)
+```powershell
+docker compose up --build
+```
 
-### 3. Base de données
-- Un jeu de données complet permettant d'importer des données dans la base
-- Collection postman permettant de tester votre API 
+- Frontend: `http://localhost`
+- Backend: `http://localhost:5000/api`
+- MongoDB: `localhost:27017`
 
+Importer les donnees de demonstration dans les conteneurs:
 
-### 4. Containerisation et déploiement
-- Un `Dockerfile` pour le frontend et le backend
-- Un fichier `docker-compose.yml` permettant de lancer l’application complète
-- Une application déployée sur une plateforme cloud (URL publique)
+```powershell
+docker compose exec backend npm run seed
+```
 
----
+## Comptes de test
 
-## Modalités de rendu
+Apres `npm run seed`, tous les comptes utilisent le mot de passe `password123`.
 
-- Le projet est à réaliser **en groupe** (MAX 4 étudiants)
-- Le rendu se fait via :
-  - Un lien vers le dépôt Git du projet
-  - Une URL d’accès à l’application déployée (si disponible)
-- Bien respecter le délai de livraison
+| Role | Email |
+| --- | --- |
+| ADMIN | `admin@academic.com` |
+| SCOLARITE | `scolarite1@academic.com` |
+| TEACHER | `teacher1@academic.com` |
+| TEACHER | `teacher2@academic.com` |
+| STUDENT | `student1@academic.com` |
+| STUDENT | `student2@academic.com` |
+| STUDENT | `student3@academic.com` |
 
-### Règles importantes
-- Le dépôt Git doit rester **privé** jusqu’à la date de rendu (sauf indication contraire)
-- Tout plagiat ou copie entraînera des sanctions conformément au règlement pédagogique
-- Chaque membre du groupe doit contribuer activement au projet (Commit, PR, issues, etc...)
+## Fonctionnalites implementees
 
----
+- CRUD etudiants, matieres, notes, UE, diplomes et professeurs.
+- Champs enrichis: photo, adresse, niveau, classe, groupe, description, syllabus, prerequis.
+- Telephone au format international pour l'envoi SMS: `+212612345678`, `+33123456789` ou `00212612345678`.
+- Niveau propose: `1AP`, `2AP`, `3eme Annee`, `4eme Annee`, `5eme Annee`.
+- Filiere proposee: `GC`, `INFO (IIR)`, `Finance`, `Reseaux`, `Automatisme`.
+- Association etudiant-cours depuis le formulaire etudiant.
+- Double diplomation via le champ `Double Diplomation`.
+- Notes regroupees par UE dans l'affichage et le bulletin.
+- Validation des UE: moyenne >= 10 et aucune note sous le seuil eliminatoire.
+- Validation du diplome basee sur les UE validees.
+- Dashboards differents selon ADMIN, SCOLARITE, STUDENT et TEACHER.
+- Export CSV et generation de bulletin imprimable en PDF.
+- Theme clair/sombre et interface responsive.
+- Google SSO, OTP, JWT et controle d'acces par role.
+- Notifications plateforme ciblees ou generales, avec historique.
+- Emails automatiques a la creation d'un compte etudiant/professeur.
 
-## Critères d’acceptation
+## Authentification et securite
 
-Le projet sera considéré comme **acceptable** s’il respecte les critères suivants :
+### Connexion classique
 
-### 1. Fonctionnalités minimales
-- Gestion complète des étudiants, cours, UE, diplômes et professeurs
-- Gestion des notes avec règles de validation des UE et diplômes respectées
-- Authentification fonctionnelle avec gestion des rôles
+La connexion utilise `email + mot de passe`. Si l'OTP est active sur le compte, le champ `Code OTP si active` devient obligatoire au moment du login.
 
-### 2. Qualité technique
-- Architecture claire et cohérente (séparation frontend / backend)
-- Modèle de données correct et normalisé
-- API REST fonctionnelle et documentée
-- Gestion correcte des erreurs et des cas limites
+### Google SSO
 
-### 3. Sécurité
-- Accès aux fonctionnalités protégé par authentification
-- Respect strict des droits selon les rôles
-- Données sensibles sécurisées
+Configurer dans Google Cloud Console:
 
-### 4. Expérience utilisateur
-- Interface claire et ergonomique
-- Application responsive
-- Respect des thèmes clair et sombre
+En mode Docker (`http://localhost`):
 
-### 5. Déploiement
-- Application lançable via Docker
-- Déploiement fonctionnel sur une plateforme cloud
+- Origine JavaScript: `http://localhost`
+- URI de redirection: `http://localhost/api/auth/google/callback`
 
-### 6. Qualité du travail en équipe
-- Historique Git cohérent
-- Répartition visible du travail entre les membres du groupe
+En mode developpement React/Node (`frontend` sur `5173`, backend sur `5000`):
 
+- Origine JavaScript: `http://localhost:5173`
+- URI de redirection: `http://localhost:5000/api/auth/google/callback`
+
+Puis renseigner dans `backend/.env`:
+
+```env
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+```
+
+Quand un compte Google utilise le meme email qu'un etudiant/professeur deja cree, l'API rattache le compte Google a cet utilisateur. L'etudiant voit donc ses propres notes si son email Google correspond a l'email du dossier etudiant.
+
+### OTP
+
+Activation depuis le menu `Securite`:
+
+1. Cliquer sur `Configurer OTP`.
+2. Scanner le QR code avec Google Authenticator ou Microsoft Authenticator.
+3. Saisir le code a 6 chiffres.
+4. A la prochaine connexion, remplir aussi `Code OTP si active`.
+
+### Creation et validation des comptes
+
+Quand ADMIN ou SCOLARITE cree un etudiant ou un professeur:
+
+- l'API cree un compte utilisateur;
+- un mot de passe temporaire est genere si aucun mot de passe n'est donne;
+- un email est envoye avec l'email de connexion, le mot de passe temporaire et le lien de validation;
+- le lien de validation permet de choisir un nouveau mot de passe;
+- si un compte a encore `mustChangePassword=true`, l'interface affiche un ecran obligatoire de changement de mot de passe avant le tableau de bord.
+
+## Notifications
+
+Les notifications sont stockees en base et filtrees par destinataire.
+
+- ADMIN et SCOLARITE voient l'ensemble des notifications.
+- STUDENT et TEACHER voient leurs notifications ciblees et les annonces generales.
+- Le badge rouge de la cloche disparait quand l'utilisateur ouvre la barre de notifications.
+- Les notifications email utilisent SMTP.
+- Les SMS utilisent Twilio si les variables Twilio sont configurees.
+- Si un etudiant/professeur n'a pas de numero de telephone, le SMS n'est pas envoye mais la notification reste disponible sur la plateforme.
+
+Cas email deja actives:
+
+- creation d'un compte etudiant;
+- creation d'un compte professeur;
+- notification manuelle email depuis l'interface;
+- note eliminatoire saisie pour un etudiant.
+
+Pour tester l'email:
+
+1. Configurer les variables `SMTP_*` dans `backend/.env`.
+2. Relancer le backend.
+3. Se connecter avec ADMIN ou SCOLARITE.
+4. Creer un etudiant/professeur avec une adresse email valide.
+5. Verifier la boite mail du destinataire.
+
+Pour tester une notification ciblee:
+
+1. Se connecter avec ADMIN ou SCOLARITE.
+2. Aller dans `Notifications`.
+3. Choisir `STUDENT` ou `TEACHER`.
+4. Commencer a taper le nom du destinataire et selectionner la personne proposee.
+5. Envoyer la notification.
+6. Se connecter avec ce compte: la notification apparait.
+7. Se connecter avec un autre compte: la notification ciblee ne doit pas apparaitre.
+
+Pour tester un SMS:
+
+1. Renseigner `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` et `TWILIO_PHONE_NUMBER`.
+2. Ajouter un numero au profil de l'etudiant/professeur cible au format international, par exemple `+212612345678`.
+3. Creer une notification avec le canal `SMS`.
+4. Verifier le statut dans l'historique des notifications.
+5. Retirer le numero du profil et refaire le test: la notification doit rester visible sur la plateforme avec le detail `SMS non envoye`.
+
+Important: Twilio propose un compte d'essai avec un solde de test, mais ce n'est pas un service SMS gratuit et illimite. En mode trial, il faut verifier le numero destinataire dans Twilio avant de pouvoir lui envoyer un SMS. Avec un compte payant, les SMS sont factures selon le pays et l'operateur.
+
+## Droits par role
+
+| Role | Acces principal |
+| --- | --- |
+| ADMIN | Lecture/ecriture sur toutes les entites, comptes, diplomes et statistiques |
+| SCOLARITE | Etudiants, matieres, notes, profils et associations etudiant-cours |
+| STUDENT | Consultation du dossier, notes, statistiques personnelles, profil |
+| TEACHER | UE et matieres affectees, etudiants concernes, saisie/consultation des notes de ses matieres |
+
+## Base de donnees
+
+Le jeu de donnees se trouve dans `backend/seed/seed.js`. Il cree:
+
+- utilisateurs par role;
+- etudiants;
+- professeurs;
+- matieres;
+- UE;
+- diplomes;
+- notes;
+- relations entre UE, matieres, diplomes et professeurs.
+
+Commande:
+
+```powershell
+cd backend
+npm run seed
+```
+
+## Schema ER
+
+```mermaid
+erDiagram
+  USER ||--o| STUDENT : "possede"
+  USER ||--o| TEACHER : "possede"
+  DIPLOMA ||--o{ STUDENT : "inscrit"
+  DIPLOMA ||--o{ UE : "contient"
+  DIPLOMA }o--o{ STUDENT : "double_diplomation"
+  TEACHER ||--o{ COURSE : "enseigne"
+  TEACHER ||--o{ UE : "referent"
+  UE }o--o{ COURSE : "regroupe"
+  STUDENT ||--o{ GRADE : "obtient"
+  COURSE ||--o{ GRADE : "evalue"
+  UE ||--o{ GRADE : "cadre"
+  USER ||--o{ NOTIFICATION : "recoit"
+  USER ||--o{ NOTIFICATION : "cree"
+
+  USER {
+    string email
+    string password
+    string role
+    boolean emailVerified
+    boolean mustChangePassword
+    boolean otpEnabled
+    string googleId
+  }
+
+  STUDENT {
+    string studentId
+    string phone
+    string photo
+    object address
+    string level
+    string className
+    string group
+  }
+
+  TEACHER {
+    string teacherId
+    string speciality
+    string phone
+    string office
+    string photo
+  }
+
+  COURSE {
+    string code
+    string name
+    string description
+    string syllabus
+    number coefficient
+    number credits
+  }
+
+  UE {
+    string code
+    string name
+    number semester
+    number eliminatoryThreshold
+  }
+
+  DIPLOMA {
+    string code
+    string name
+    string description
+    number duration
+  }
+
+  GRADE {
+    number value
+    string session
+    number semester
+    string academicYear
+  }
+
+  NOTIFICATION {
+    string channel
+    string recipientRole
+    string recipient
+    string subject
+    string message
+    string status
+  }
+```
+
+## Collection Postman
+
+La collection est disponible dans:
+
+```text
+postman/Academic_Management_API.postman_collection.json
+```
+
+Utilisation conseillee:
+
+1. Importer la collection dans Postman.
+2. Definir `baseUrl` sur `http://localhost:5000/api`.
+3. Lancer `POST /auth/login`.
+4. Copier le JWT retourne.
+5. Utiliser `Authorization: Bearer <token>` pour tester les routes protegees.
+
+## Tests backend
+
+Test rapide:
+
+```powershell
+cd backend
+npm run test:smoke
+```
+
+Le smoke test verifie notamment:
+
+- disponibilite de l'API;
+- connexion des comptes de test;
+- acces selon les roles;
+- routes principales du backend.
+
+## Conteneurisation
+
+Le projet est lancable avec Docker grace a trois services:
+
+- `mongodb`: base MongoDB avec volume persistant;
+- `backend`: API Node.js construite depuis `backend/Dockerfile`;
+- `frontend`: build React servi par Nginx depuis `frontend/Dockerfile`.
+
+Le fichier `frontend/nginx.conf` redirige automatiquement les appels `/api` vers le service `backend`. Le navigateur appelle donc le frontend, et Nginx se charge de passer les requetes API au conteneur backend.
+
+Commandes utiles:
+
+```powershell
+docker compose config
+docker compose up --build
+docker compose down
+```
+
+Apres lancement:
+
+- application: `http://localhost`;
+- API: `http://localhost/api` via Nginx ou `http://localhost:5000/api` directement;
+- MongoDB: `localhost:27017`.
+
+Pour importer le seed dans Docker:
+
+```powershell
+docker compose exec backend npm run seed
+```
+
+## Deploiement cloud
+
+La procedure la plus simple consiste a utiliser un VPS ou une instance cloud avec Docker installe.
+
+Etapes:
+
+1. Creer une machine cloud chez Hostinger VPS, AWS EC2, Azure VM ou autre fournisseur.
+2. Installer Docker et Docker Compose sur la machine.
+3. Cloner le depot prive sur la machine.
+4. Creer les fichiers `.env` necessaires, sans commiter les secrets.
+5. Adapter `FRONTEND_URL` avec l'URL publique ou le nom de domaine.
+6. Lancer `docker compose up --build -d`.
+7. Ouvrir le port HTTP `80` et, si besoin, le port HTTPS `443`.
+8. Configurer le domaine ou sous-domaine vers l'adresse IP du serveur.
+9. Ajouter un certificat SSL avec Nginx Proxy Manager, Caddy ou Certbot.
+10. Tester l'application, Google SSO, OTP, emails et notifications.
+
+Pour Google SSO en production, ajouter dans Google Cloud Console:
+
+- Origine JavaScript: `https://votre-domaine.com`;
+- URI de redirection: `https://votre-domaine.com/api/auth/google/callback`.
+
+Si le deploiement se fait sur Render, Railway ou Fly.io, le principe reste le meme: declarer les variables d'environnement, connecter le depot Git, puis lancer le build Docker.
+
+## Notes de rendu
+
+- Le depot doit rester prive jusqu'au rendu si c'est demande par l'enseignant.
+- Les variables sensibles ne doivent pas etre commitees.
+- Les fichiers `node_modules`, `.env` et les fichiers generes localement restent ignores.
